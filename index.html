@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李中莹·处事模式测评</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy-900: #0b1426;
+    --navy-800: #142139;
+    --navy-700: #1e293b;
+    --orange-500: #f97316;
+    --orange-400: #fb923c;
+    --orange-50: #fff7ed;
+    --cream: #fefcf3;
+    --paper: #f8fafc;
+    --belief: #3b82f6;
+    --ability: #10b981;
+    --drive: #f59e0b;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+    background: var(--cream);
+    color: var(--navy-900);
+  }
+  .section {
+    min-height: 100vh;
+    padding: 5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .section-tag {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--orange-500);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--navy-900);
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 1.125rem;
+    color: #475569;
+    max-width: 56rem;
+    line-height: 1.75;
+  }
+  /* side nav */
+  .side-nav {
+    position: fixed;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .nav-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(11,20,38,0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-dot:hover { background: var(--orange-500); transform: scale(1.4); }
+  .nav-dot.active { background: var(--orange-500); width: 24px; border-radius: 4px; }
+  .nav-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 18px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--navy-900);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .nav-dot:hover::after { opacity: 1; }
+  /* part marker */
+  .part-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--navy-900);
+    color: var(--orange-400);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+  /* cards */
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .card-elev {
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+  .card-elev:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    border-color: var(--orange-400);
+  }
+  /* 3-layer model */
+  .layer-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    color: white;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .layer-row:hover { transform: translateX(8px); }
+  .layer-belief { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .layer-ability { background: linear-gradient(135deg, #10b981, #047857); }
+  .layer-drive { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .layer-name { font-size: 1.5rem; font-weight: 700; min-width: 8rem; }
+  .layer-subs { display: flex; gap: 1.5rem; }
+  .layer-sub-chip {
+    background: rgba(255,255,255,0.18);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+  }
+  .layer-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    background: white;
+    color: var(--navy-900);
+    border-radius: 12px;
+    margin-top: 0;
+  }
+  .layer-detail.open {
+    max-height: 1200px;
+    margin-top: 0.75rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid #e2e8f0;
+  }
+  /* 3D cube */
+  .cube-stage {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    perspective: 1200px;
+    margin: 0 auto;
+  }
+  .cube {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(-20deg) rotateY(-25deg);
+    transition: transform 0.1s linear;
+  }
+  .cube-vertex {
+    position: absolute;
+    width: 80px; height: 80px;
+    border-radius: 12px;
+    background: white;
+    border: 2px solid var(--orange-400);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--navy-900);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+    line-height: 1.1;
+    padding: 4px;
+  }
+  .cube-vertex .vlabel { font-size: 0.65rem; opacity: 0.6; margin-top: 2px; }
+  .cube-edge {
+    position: absolute;
+    background: rgba(11,20,38,0.15);
+    transform-origin: 0 0;
+  }
+  /* type grid */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  .type-card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .type-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    border-color: var(--orange-400);
+  }
+  .type-card .thumb {
+    aspect-ratio: 9 / 14;
+    background: linear-gradient(180deg, #fff7ed, #fff);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0.75rem 0.75rem 0;
+  }
+  .type-card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: top center;
+    display: block;
+    border-radius: 12px 12px 0 0;
+  }
+  .type-card .meta { padding: 1rem; }
+  .axis-chip {
+    display: inline-flex;
+    gap: 4px;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #475569;
+    margin-bottom: 0.5rem;
+  }
+  /* heatmap */
+  .heatmap {
+    display: grid;
+    grid-template-columns: 140px repeat(6, 1fr);
+    gap: 4px;
+  }
+  .heat-cell {
+    aspect-ratio: 2/1;
+    border-radius: 6px;
+    background: #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .heat-cell:hover { transform: scale(1.1); z-index: 5; }
+  .heat-label {
+    display: flex; align-items: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--navy-700);
+    padding-right: 0.5rem;
+  }
+  /* tabs */
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.6rem;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+  }
+  .tab-btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--navy-900); color: white; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  /* report block */
+  .report-block {
+    background: white;
+    border-radius: 18px;
+    padding: 2rem 2.5rem;
+    border-left: 4px solid var(--orange-500);
+    margin-bottom: 1.25rem;
+  }
+  .report-block h4 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--navy-900);
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .report-block h4 .num {
+    background: var(--orange-500);
+    color: white;
+    width: 1.75rem; height: 1.75rem;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .report-block p { color: #334155; line-height: 1.85; margin-bottom: 0.75rem; }
+  /* compare table */
+  .compare-table {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+  .compare-table table { width: 100%; border-collapse: collapse; }
+  .compare-table th, .compare-table td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.95rem;
+    vertical-align: top;
+  }
+  .compare-table th {
+    background: var(--navy-900);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
+  .compare-table th.dim { background: #1e293b; }
+  .compare-table tr:hover td { background: var(--orange-50); }
+  /* dimension bar */
+  .dim-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .dim-bar > span { display: block; height: 100%; border-radius: 4px; }
+  /* funnel */
+  .funnel-row {
+    height: 60px;
+    margin: 0 auto;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    color: white;
+    font-weight: 600;
+  }
+  /* pyramid */
+  .pyramid { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pyramid-row {
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    min-width: 200px;
+  }
+  /* journey */
+  .journey {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .journey-step {
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.85rem 0.5rem;
+    text-align: center;
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    transition: all 0.2s;
+  }
+  .journey-step:hover { border-color: var(--orange-400); transform: translateY(-2px); }
+  .journey-step .step-num {
+    width: 24px; height: 24px;
+    background: var(--orange-500);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.4rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+  .journey-step .step-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .journey-step .step-desc { font-size: 0.65rem; color: #94a3b8; line-height: 1.4; }
+  .journey-arrow {
+    color: var(--orange-400);
+    text-align: center;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* likert */
+  .likert {
+    background: white;
+    border-radius: 18px;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .likert-question {
+    font-size: 1.1rem;
+    color: var(--navy-900);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    min-height: 4.5rem;
+  }
+  .likert-scale {
+    display: flex; justify-content: space-between; gap: 0.5rem;
+  }
+  .likert-btn {
+    flex: 1;
+    aspect-ratio: 1.2;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    font-size: 1.2rem;
+  }
+  .likert-btn:hover { border-color: var(--orange-500); background: var(--orange-50); }
+  .likert-btn.selected { background: var(--orange-500); color: white; border-color: var(--orange-500); }
+  .likert-btn .lab { font-size: 0.65rem; opacity: 0.7; margin-top: 4px; font-weight: 400; }
+  /* result card */
+  .result-hero {
+    background: linear-gradient(135deg, var(--navy-900), #1e3a8a);
+    border-radius: 24px;
+    padding: 3rem;
+    color: white;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .result-hero img { width: 100%; max-width: 360px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+  .keyword-chip {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: rgba(251,146,60,0.2);
+    color: var(--orange-400);
+    border: 1px solid var(--orange-400);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  /* footer */
+  .end-card {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid #fed7aa;
+    height: 100%;
+  }
+  .intro-crop {
+    height: 720px;
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+  }
+  .intro-crop img {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: top center;
+    border-radius: 14px;
+    border: 1px solid #fed7aa;
+  }
+  .dimension-overview {
+    display: grid;
+    gap: 1rem;
+  }
+  .dimension-band {
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    color: white;
+  }
+  .dimension-band h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.65rem;
+  }
+  .dimension-band p {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    opacity: 0.96;
+  }
+  .dimension-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .dimension-node {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .dimension-node .num {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--orange-500);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+  .logic-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+  .logic-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+  }
+  .logic-axes {
+    display: inline-block;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.72rem;
+    margin-bottom: 0.55rem;
+  }
+  .course-callout {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 1px solid #fb923c;
+    border-radius: 18px;
+    padding: 1.15rem 1.35rem;
+    box-shadow: 0 8px 20px rgba(249,115,22,0.08);
+  }
+  .course-callout.dark {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-color: #fb923c;
+    color: white;
+  }
+  .course-callout .tag {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(249,115,22,0.15);
+    color: #ea580c;
+    font-size: 0.74rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+  }
+  .course-callout.dark .tag {
+    background: rgba(251,146,60,0.18);
+    color: #fdba74;
+  }
+  .single-asset {
+    max-width: 360px;
+    margin: 1.5rem auto 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #fed7aa;
+    background: white;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  }
+  .single-asset img {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    background: #fff7ed;
+  }
+  /* utility */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem; left: 50%; transform: translateX(-50%);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    animation: bounce 1.6s infinite;
+  }
+  @keyframes bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
+
+  @media (max-width: 1024px) {
+    .section { padding: 3rem 2rem; }
+    .section-title { font-size: 2rem; }
+    .type-grid { grid-template-columns: repeat(4, 1fr); }
+    .result-hero { grid-template-columns: 1fr; }
+    .journey { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .section { padding: 2.5rem 1.25rem; }
+    .section-title { font-size: 1.6rem; }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+    .journey { grid-template-columns: repeat(2, 1fr); }
+    .side-nav { display: none; }
+  }
+  @media print {
+    .section { page-break-after: always; min-height: auto; padding: 2rem; }
+    .side-nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- side navigation -->
+<nav class="side-nav" id="sideNav"></nav>
+
+<!-- ================== S1 HERO ================== -->
+<section class="section" id="s1" data-title="开场" style="background: linear-gradient(135deg, #fefcf3, #fff7ed);">
+  <div class="part-badge mb-6">测评框架</div>
+  <h1 class="section-title" style="font-size: 4rem;">李中莹 · 处事模式测评</h1>
+  <p class="section-sub" style="font-size: 1.5rem; max-width: 52rem;">
+    这是一套基于 NLP 心理学的 <strong>8 型处事模式评估系统</strong>。<br>
+    通过 36 道题、6 个心理维度与 8 种类型划分，形成覆盖 6 大生活领域的 48 份个性化深度报告。
+  </p>
+  <div class="flex gap-12 mt-12">
+    <div>
+      <div class="text-6xl font-extrabold text-orange-500">36</div>
+      <div class="text-slate-600 mt-1">道核心题目</div>
+    </div>
+    <div>
+      <div class="text-6xl font-extrabold text-orange-500">6</div>
+      <div class="text-slate-600 mt-1">个心理维度</div>
+    </div>
+    <div>
+      <div class="text-6xl font-extrabold text-orange-500">8</div>
+      <div class="text-slate-600 mt-1">种处事模式</div>
+    </div>
+    <div>
+      <div class="text-6xl font-extrabold text-orange-500">48</div>
+      <div class="text-slate-600 mt-1">份子报告</div>
+    </div>
+  </div>
+  <div class="card mt-10" style="max-width: 62rem; background: rgba(255,255,255,0.86); backdrop-filter: blur(10px);">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="p-4 rounded-xl" style="background: #fff7ed;">
+        <div class="font-bold text-lg mb-2">测评框架</div>
+        <p class="text-sm text-slate-600 leading-relaxed">说明测评如何由 3 层结构、6 个子维度与 36 道题共同构成，并映射到 6 大生活领域。</p>
+      </div>
+      <div class="p-4 rounded-xl" style="background: #eff6ff;">
+        <div class="font-bold text-lg mb-2">报告结构</div>
+        <p class="text-sm text-slate-600 leading-relaxed">说明用户完成答题后将获得哪些内容，包括整体画像、子维度解释、6 大领域报告与成长建议。</p>
+      </div>
+      <div class="p-4 rounded-xl" style="background: #f0fdf4;">
+        <div class="font-bold text-lg mb-2">报告内容</div>
+        <p class="text-sm text-slate-600 leading-relaxed">说明报告如何从心理画像延展到事业、亲密关系、亲子、人际、情绪与个人成长等具体场景。</p>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓ 向下滚动查看完整框架</div>
+</section>
+
+<!-- ================== S-INTRO IMAGE ================== -->
+<section class="section" id="s-intro" data-title="介绍页拆解" style="background: #fffaf5;">
+  <div class="part-badge mb-6">产品概览</div>
+  <h2 class="section-title">介绍页长图传递出的核心信息</h2>
+  <p class="section-sub mb-10">
+    结合你提供的 <strong>测评介绍页</strong> 和 Markdown 文档，这张长图主要承担 3 个功能：建立信任基础、解释测评逻辑、帮助用户理解报告与现实生活之间的连接。
+  </p>
+  <div class="grid grid-cols-2 gap-8 items-stretch">
+    <div class="card intro-crop" id="introScroll" style="padding: 1rem;">
+      <img src="li-report-assets/intro.jpg" alt="测评介绍页">
+    </div>
+    <div class="space-y-5" id="introNotes">
+      <div class="card">
+        <div class="text-orange-600 text-sm font-bold tracking-widest mb-2">信息一</div>
+        <div class="font-bold text-xl mb-2">先建立信任基础</div>
+        <p class="text-slate-600 leading-relaxed">开头通过李中莹老师形象与核心观点，先完成产品的信任建立，让用户理解这不是泛泛的人格分类，而是有明确理论来源与实践背景的测评产品。</p>
+      </div>
+      <div class="card">
+        <div class="text-orange-600 text-sm font-bold tracking-widest mb-2">信息二</div>
+        <div class="font-bold text-xl mb-2">再说明“为什么有用”</div>
+        <p class="text-slate-600 leading-relaxed">长图强调：同样遇到问题，不同人会出现不同反应，而这些反应背后存在相对稳定的处事模式。这样可以帮助用户理解，测评结果与现实生活中的决策、关系和情绪状态是相关的。</p>
+      </div>
+      <div class="card">
+        <div class="text-orange-600 text-sm font-bold tracking-widest mb-2">信息三</div>
+        <div class="font-bold text-xl mb-2">把复杂理论转成可理解结构</div>
+        <p class="text-slate-600 leading-relaxed">图中将测评逻辑压缩为易理解的结构化信息，包括类型划分、测评内容板块以及不同类型在关系与生活中的典型表现，降低了用户进入门槛。</p>
+      </div>
+      <div class="card">
+        <div class="text-orange-600 text-sm font-bold tracking-widest mb-2">信息四</div>
+        <div class="font-bold text-xl mb-2">核心价值是“报告可落地”</div>
+        <p class="text-slate-600 leading-relaxed">长图持续强调的不是抽象类型标签，而是事业、人际、伴侣、亲子、情绪等具体处境中的表现与建议，因此产品价值落点在于帮助用户更清晰地理解自己，并看到可执行的成长路径。</p>
+      </div>
+      <div class="card" style="background: var(--navy-900); color: white;">
+        <div class="text-orange-400 text-sm font-bold tracking-widest mb-2">结论</div>
+        <p style="line-height: 1.8;">这张介绍页已经清晰呈现出产品的核心表达方向：<strong>信任基础 + 简明理论 + 真实生活场景 + 可执行建议</strong>。在此基础上展开测评框架与报告成品，产品价值会更完整地被看见。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S-USERS · TARGET AUDIENCE (前置) ================== -->
+<section class="section" id="s-users" data-title="目标用户" style="background: #f8fafc;">
+  <div class="part-badge mb-6">适用人群</div>
+  <h2 class="section-title">目标用户：6 类典型成人用户</h2>
+  <p class="section-sub mb-10">产品主要面向个人消费市场中的成年人用户，核心特征是：处在人生议题较密集的阶段，具备一定自我成长意愿，并愿意为理解自己、改善状态付费。</p>
+  <div class="grid grid-cols-3 gap-5">
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🔍</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">自我探索者</div>
+      <div class="text-xs text-slate-400 mb-3">25-45 岁 · 心理学爱好者</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">对心理学有持续兴趣，愿意通过测评、阅读或课程不断理解自己，把“认识自己”视为长期课题。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">知道自己有问题，但说不清是什么问题；做过 MBTI/九型，但落不到生活里。</span>
+      </div>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">💔</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">关系困扰者</div>
+      <div class="text-xs text-slate-400 mb-3">28-50 岁 · 已婚/有娃</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">在亲密关系、家庭关系或亲子关系中持续承受压力，希望先从理解自己的处事模式开始，改善互动方式。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">关系反复卡住，却看不清自己在其中的处事模式；想改善关系，也需要先知道自己可以从哪里开始调整。</span>
+      </div>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🌪️</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">职业迷茫者</div>
+      <div class="text-xs text-slate-400 mb-3">30-45 岁 · 职场中段</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">处在职业中段或转型节点，希望分辨自己的卡点究竟来自信念、能力还是行动方式。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">努力够、能力够，但内核不稳，反复内耗；想找到"真正适合自己的方向"。</span>
+      </div>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🌫️</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">中年危机者</div>
+      <div class="text-xs text-slate-400 mb-3">35-50 岁 · 上有老下有小</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">承受家庭、事业、健康等多重压力，开始重新审视当前生活方式与长期人生方向。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">外在还在维持，内在已经空了；需要一个工具帮自己重新看见，并重新点燃内在的方向感和行动动力。</span>
+      </div>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">😔</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">情绪/身心困扰者</div>
+      <div class="text-xs text-slate-400 mb-3">25-50 岁 · 心理亚健康</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">长期处在焦虑、疲惫、内耗或轻度身心失衡状态，希望通过更低门槛的方式先整理自己的处境。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">说不清哪里不对劲，需要被"看见"和被"命名"；想要可操作的自助工具。</span>
+      </div>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">📚</div>
+      <div class="font-bold text-lg text-orange-600 mb-2">李中莹老师粉丝</div>
+      <div class="text-xs text-slate-400 mb-3">35-55 岁 · NLP 学习者</div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">读过李中莹老师的书或听过相关课程，对 NLP 体系已有基础认知，希望进一步把理论映射到自身经验。</p>
+      <div class="p-3 rounded-lg bg-slate-50 text-xs">
+        <strong class="text-slate-700">痛点</strong><br>
+        <span class="text-slate-600">想把听过的理论落到自己身上；测评是把抽象 NLP 概念可视化的最佳入口。</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S-SCENES · USE CASES (前置) ================== -->
+<section class="section" id="s-scenes" data-title="应用场景">
+  <div class="section-tag">应用场景</div>
+  <h2 class="section-title">6 个典型应用场景</h2>
+  <p class="section-sub mb-10">应用场景回答的是“用户会在什么时刻需要这份测评”。核心仍然是<strong>自我觉察、自我理解与自我成长</strong>，而不是把测评作为评价他人或未成年人的工具。</p>
+  <div class="grid grid-cols-3 gap-5">
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🪞</div>
+      <div class="font-bold mb-2">场景 1：自我认知与阶段复盘</div>
+      <p class="text-sm text-slate-600">当用户处在身份探索、人生转折或阶段复盘时，测评可以帮助其快速看见自己当前的内在模式与主要卡点。</p>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">💞</div>
+      <div class="font-bold mb-2">场景 2：亲密关系中的自我觉察</div>
+      <p class="text-sm text-slate-600">当用户在婚恋或婚姻关系中反复遇到情绪、边界或沟通问题时，测评帮助其先回到自身，理解自己在关系里的处事模式。</p>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">👨‍👩‍👧</div>
+      <div class="font-bold mb-2">场景 3：父母角色下的自我检视</div>
+      <p class="text-sm text-slate-600">在亲子教育压力下，成年人用户可以借助测评反思自己的期待、边界与系统归属议题，从而调整自己的养育方式。</p>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🌪️</div>
+      <div class="font-bold mb-2">场景 4：职业转型决策</div>
+      <p class="text-sm text-slate-600">想转行、想创业、想做自由职业前，用测评看清自己在事业领域的真实卡点——是信念问题、能力问题，还是动力问题？</p>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">🩺</div>
+      <div class="font-bold mb-2">场景 5：情绪与身心状态整理</div>
+      <p class="text-sm text-slate-600">当用户长期焦虑、疲惫、内耗或出现轻度躯体化表现时，测评可作为进入自我整理与调节练习的起点。</p>
+    </div>
+    <div class="card card-elev">
+      <div class="text-3xl mb-3">📅</div>
+      <div class="font-bold mb-2">场景 6：年度成长记录</div>
+      <p class="text-sm text-slate-600">用户可以在年度复盘、生日或重大阶段节点重新测评，连续观察自己在 6 个维度上的变化，形成长期成长档案。</p>
+    </div>
+  </div>
+  <div class="mt-8 p-5 rounded-xl text-center" style="background: var(--navy-900); color: white;">
+    <p class="text-lg">补充说明：本测评面向 <strong>18 岁以上成年人</strong>，核心价值在于帮助用户理解自己，而不是给关系中的另一方贴标签。</p>
+  </div>
+</section>
+
+<!-- ================== S2 PROBLEM ================== -->
+<section class="section" id="s2" data-title="为什么">
+  <div class="section-tag">产品价值</div>
+  <h2 class="section-title">这套测评补足了什么空白？</h2>
+  <p class="section-sub mb-10">现有主流人格工具各有价值，但多数更偏向类型描述、性格观察或单一领域应用，较少直接连接到成年人在多种生活场景中的实际处境。</p>
+  <div class="grid grid-cols-4 gap-4 mb-10">
+    <div class="card">
+      <div class="text-xs text-slate-400 mb-2">MBTI</div>
+      <div class="font-semibold text-slate-700 mb-1">类型识别强</div>
+      <p class="text-sm text-slate-500">适合快速建立自我认知，但对具体生活场景的行动建议相对有限。</p>
+    </div>
+    <div class="card">
+      <div class="text-xs text-slate-400 mb-2">九型人格</div>
+      <div class="font-semibold text-slate-700 mb-1">内在解释丰富</div>
+      <p class="text-sm text-slate-500">理论延展性强，但对普通用户而言进入门槛和落地理解成本较高。</p>
+    </div>
+    <div class="card">
+      <div class="text-xs text-slate-400 mb-2">盖洛普优势</div>
+      <div class="font-semibold text-slate-700 mb-1">优势识别清晰</div>
+      <p class="text-sm text-slate-500">在职业发展上很有效，但对亲密关系、亲子、情绪等议题覆盖较少。</p>
+    </div>
+    <div class="card">
+      <div class="text-xs text-slate-400 mb-2">大五人格</div>
+      <div class="font-semibold text-slate-700 mb-1">研究基础扎实</div>
+      <p class="text-sm text-slate-500">适合学术和研究语境，但较少直接转化为面向普通用户的叙事与建议。</p>
+    </div>
+  </div>
+  <div class="card" style="background: linear-gradient(135deg, var(--navy-900), #1e3a8a); color: white; border: none;">
+    <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">本产品的补位价值</div>
+    <div class="text-2xl font-bold mb-3">将 NLP 心理学框架、李中莹老师的长期实践经验，与 6 大生活领域打通，形成一份更具场景感与行动性的成长地图。</div>
+    <ul class="space-y-2 text-slate-200">
+      <li>✓ 不只给出类型结果，也进一步解释用户在不同生活场景中的典型表现与主要卡点</li>
+      <li>✓ 每个类型对应 6 个领域报告，共形成 48 份独立内容，内容颗粒度更细</li>
+      <li>✓ 报告内容与后续成长服务之间存在自然衔接，产品路径更完整</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================== S3 3-LAYER MODEL ================== -->
+<section class="section" id="s3" data-title="3层模型">
+  <div class="section-tag">框架一</div>
+  <h2 class="section-title">理论根基：处事模式 3 层结构</h2>
+  <p class="section-sub mb-10">每个人面对生活的"处事模式"，可以拆解为 3 个逐层支撑的心理层级。点击任一层查看子维度详情。</p>
+
+  <div onclick="toggleLayer('belief')" class="layer-row layer-belief">
+    <div class="layer-name">🧠 信念层</div>
+    <div class="layer-subs">
+      <div class="layer-sub-chip">信念弹性</div>
+      <div class="layer-sub-chip">自我价值根基</div>
+    </div>
+    <div class="ml-auto text-2xl opacity-70">▾</div>
+  </div>
+  <div class="layer-detail" id="detail-belief">
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #1d4ed8;">⚡ 信念弹性</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>：BVR（信念-价值观-规条）的灵活程度。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>："没有挫败只有反馈"，视困难为资源；<br><strong>低水平</strong>：困在"必须/应该"，视挫折为定论。</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #1d4ed8;">🔋 自我价值根基</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>：自信 + 自爱 + 自尊 = 资格感。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>：稳定相信自己值得美好；<br><strong>低水平</strong>：价值感随评价波动，常感"配不上"。</p>
+      </div>
+    </div>
+  </div>
+
+  <div onclick="toggleLayer('ability')" class="layer-row layer-ability">
+    <div class="layer-name">🤝 能力层</div>
+    <div class="layer-subs">
+      <div class="layer-sub-chip">人际界限力</div>
+      <div class="layer-sub-chip">情绪解码力</div>
+    </div>
+    <div class="ml-auto text-2xl opacity-70">▾</div>
+  </div>
+  <div class="layer-detail" id="detail-ability">
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #047857;">🛡️ 人际界限力</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>：李中莹"三件事法则"——自己的事、他人的事、老天的事。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>：温柔而坚定地分清三件事；<br><strong>低水平</strong>：过度承担他人课题，边界模糊。</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #047857;">🚨 情绪解码力</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>："情绪没有好坏，每一种都有正面意义"。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>：视情绪为"潜意识信使"；<br><strong>低水平</strong>：视情绪为麻烦，习惯压抑或爆发。</p>
+      </div>
+    </div>
+  </div>
+
+  <div onclick="toggleLayer('drive')" class="layer-row layer-drive">
+    <div class="layer-name">🚀 动力层</div>
+    <div class="layer-subs">
+      <div class="layer-sub-chip">行动变通力</div>
+      <div class="layer-sub-chip">系统归属感</div>
+    </div>
+    <div class="ml-auto text-2xl opacity-70">▾</div>
+  </div>
+  <div class="layer-detail" id="detail-drive">
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #d97706;">🛤️ 行动变通力</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>："凡事必有至少三个解决方法" + "有效果比有道理更重要"。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>：一条路不通就换路；<br><strong>低水平</strong>：一根筋，更用力做同一件事。</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-lg mb-2" style="color: #d97706;">🔗 系统归属感</h5>
+        <p class="text-sm text-slate-600 mb-2"><strong>NLP 概念</strong>：家庭"序位"——是否还在被原生家庭消耗。</p>
+        <p class="text-sm text-slate-700"><strong>高水平</strong>：回到自己的位置，转身走向自己的生活；<br><strong>低水平</strong>：被过去不断消耗，难以前行。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S4 RADAR ================== -->
+<section class="section" id="s4" data-title="6维全景">
+  <div class="section-tag">框架二</div>
+  <h2 class="section-title">6 个子维度组成你的心理画像</h2>
+  <p class="section-sub mb-10">3 层 × 每层 2 维 = 6 个子维度。这是测评算法的全部输入。</p>
+  <div class="grid grid-cols-2 gap-10">
+    <div class="card" style="padding: 2rem;">
+      <div class="dimension-overview">
+        <div class="dimension-band" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+          <h4>信念层：决定一个人如何解释世界</h4>
+          <p>由 <strong>信念弹性</strong> 与 <strong>自我价值根基</strong> 组成，主要回答“我如何理解挫折、机会与自我价值”。</p>
+        </div>
+        <div class="dimension-band" style="background: linear-gradient(135deg, #10b981, #047857);">
+          <h4>能力层：决定一个人如何处理关系与情绪</h4>
+          <p>由 <strong>人际界限力</strong> 与 <strong>情绪解码力</strong> 组成，主要回答“我如何分清责任、理解情绪并与人相处”。</p>
+        </div>
+        <div class="dimension-band" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+          <h4>动力层：决定一个人如何行动与前行</h4>
+          <p>由 <strong>行动变通力</strong> 与 <strong>系统归属感</strong> 组成，主要回答“我是否能动起来、换方法，以及是否还被过去牵制”。</p>
+        </div>
+      </div>
+      <div class="dimension-flow">
+        <div class="dimension-node">
+          <div class="num">36</div>
+          <div class="text-sm text-slate-600">题目输入</div>
+        </div>
+        <div class="dimension-node">
+          <div class="num">6</div>
+          <div class="text-sm text-slate-600">子维度得分</div>
+        </div>
+        <div class="dimension-node">
+          <div class="num">8</div>
+          <div class="text-sm text-slate-600">整体画像</div>
+        </div>
+        <div class="dimension-node">
+          <div class="num">6</div>
+          <div class="text-sm text-slate-600">领域报告</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h4 class="font-bold text-xl mb-4">维度与生活领域的对应</h4>
+      <p class="text-slate-600 mb-4 text-sm">每个维度都关联 1-3 个具体生活领域，确保测评结果能落到日常场景。</p>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #3b82f6;"></span><strong>信念弹性</strong><span class="text-slate-500">→ 事业 / 亲子 / 人际 / 情绪 / 个人发展</span></div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #6366f1;"></span><strong>自我价值根基</strong><span class="text-slate-500">→ 事业 / 情绪</span></div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #10b981;"></span><strong>人际界限力</strong><span class="text-slate-500">→ 伴侣 / 亲子 / 人际</span></div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #14b8a6;"></span><strong>情绪解码力</strong><span class="text-slate-500">→ 伴侣 / 人际 / 情绪 / 个人发展</span></div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #f59e0b;"></span><strong>行动变通力</strong><span class="text-slate-500">→ 事业 / 个人发展</span></div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full" style="background: #f97316;"></span><strong>系统归属感</strong><span class="text-slate-500">→ 伴侣 / 亲子</span></div>
+      </div>
+      <div class="mt-6 p-4 rounded-xl" style="background: var(--orange-50); border: 1px dashed var(--orange-400);">
+        <div class="text-xs text-orange-700 font-semibold tracking-widest mb-1">设计原理</div>
+        <p class="text-sm text-slate-700">每个维度的得分范围 1-5 分。<strong>3.5 分为分界线</strong>，高于则归"高水平"，低于则归"低水平"。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S5 HEATMAP ================== -->
+<section class="section" id="s5" data-title="36题矩阵">
+  <div class="section-tag">框架三</div>
+  <h2 class="section-title">36 道题怎么分布的？</h2>
+  <p class="section-sub mb-10">每个色块代表"某子维度 × 某生活领域"对应的题目数量。深色 = 题目多，浅色 = 无题目。</p>
+  <div class="card p-8">
+    <div class="heatmap">
+      <div></div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">事业财富</div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">伴侣婚姻</div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">亲子养育</div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">人际关系</div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">情绪健康</div>
+      <div class="heat-label justify-center" style="font-size: 0.7rem;">个人发展</div>
+
+      <div class="heat-label">信念弹性</div>
+      <div class="heat-cell" style="background:#1e40af;" title="Q1-Q3">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#1e40af;" title="Q4-Q6">3</div>
+      <div class="heat-cell" style="background:#1e40af;" title="Q7-Q9">3</div>
+      <div class="heat-cell" style="background:#1e40af;" title="情绪健康由信念弹性的全部题目参与">9</div>
+      <div class="heat-cell" style="background:#1e40af;" title="个人发展由信念弹性的全部题目参与">9</div>
+
+      <div class="heat-label">自我价值</div>
+      <div class="heat-cell" style="background:#3730a3;" title="Q10-Q12">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#3730a3;" title="情绪健康由自我价值根基的全部题目参与">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+
+      <div class="heat-label">人际界限</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#047857;" title="Q16-Q18">3</div>
+      <div class="heat-cell" style="background:#047857;" title="Q19-Q21">3</div>
+      <div class="heat-cell" style="background:#047857;" title="Q22-Q24">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+
+      <div class="heat-label">情绪解码</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#0d9488;" title="Q25-Q27">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#0d9488;" title="Q28-Q30">3</div>
+      <div class="heat-cell" style="background:#0d9488;" title="情绪健康由情绪解码力的全部题目参与">6</div>
+      <div class="heat-cell" style="background:#0d9488;" title="个人发展由情绪解码力的全部题目参与">6</div>
+
+      <div class="heat-label">行动变通</div>
+      <div class="heat-cell" style="background:#d97706;" title="Q13-Q15">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#d97706;" title="个人发展由行动变通力的全部题目参与">3</div>
+
+      <div class="heat-label">系统归属</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#ea580c;" title="Q31-Q33">3</div>
+      <div class="heat-cell" style="background:#ea580c;" title="Q34-Q36">3</div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+      <div class="heat-cell" style="background:#e2e8f0;"></div>
+    </div>
+    <div class="mt-8 grid grid-cols-3 gap-4 text-sm">
+      <div class="p-4 rounded-lg" style="background:#f8fafc;">
+        <div class="font-semibold text-slate-700 mb-1">📝 题目示例（信念弹性）</div>
+        <p class="text-slate-600">"看到同行用我不认可的方式获得成功，我会觉得'这个世界不太公平'" <span class="text-red-500">反向计分</span></p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#f8fafc;">
+        <div class="font-semibold text-slate-700 mb-1">📝 题目示例（人际界限）</div>
+        <p class="text-slate-600">"我能让孩子自己承担 ta 选择的后果，哪怕我不认同 ta 的选择" <span class="text-green-600">正向计分 ⭐</span></p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#f8fafc;">
+        <div class="font-semibold text-slate-700 mb-1">📝 题目示例（系统归属）</div>
+        <p class="text-slate-600">"想到自己的父母，我心里仍有一些没消化完的委屈、愤怒或愧疚" <span class="text-red-500">反向计分</span></p>
+      </div>
+    </div>
+    <div class="mt-6 p-4 rounded-xl text-sm" style="background: #fff7ed; border: 1px dashed #fb923c;">
+      <strong>补充说明：</strong>情绪健康报告综合 <strong>信念弹性、自我价值根基、情绪解码力</strong> 3 个子维度的全部题目；个人发展报告综合 <strong>信念弹性、情绪解码力、行动变通力</strong> 3 个子维度的全部题目。
+    </div>
+  </div>
+</section>
+
+<!-- ================== S6 CUBE ================== -->
+<section class="section" id="s6" data-title="推导引擎">
+  <div class="section-tag">框架四</div>
+  <h2 class="section-title">从 6 维分到 8 种类型的推导逻辑</h2>
+  <p class="section-sub mb-10">每层“高/低”的组合，构成 2 × 2 × 2 = <strong>8 种处事模式</strong>。这里直接把 8 种组合平铺出来，便于一眼看清结构。</p>
+  <div class="grid grid-cols-2 gap-12 items-center">
+    <div>
+      <div class="logic-grid">
+        <div class="logic-card"><span class="logic-axes">信·能·动 高·高·高</span><div class="font-bold text-lg" style="color:#f97316;">开拓者</div><div class="text-sm text-slate-600 mt-1">内核稳，趋向完整</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 低·高·高</span><div class="font-bold text-lg" style="color:#ef4444;">追逐者</div><div class="text-sm text-slate-600 mt-1">能干但停不下来</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 高·低·高</span><div class="font-bold text-lg" style="color:#f59e0b;">实心人</div><div class="text-sm text-slate-600 mt-1">真诚，方法待打磨</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 高·低·低</span><div class="font-bold text-lg" style="color:#8b5cf6;">隐士</div><div class="text-sm text-slate-600 mt-1">思维灵活，行动受限</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 低·低·高</span><div class="font-bold text-lg" style="color:#ec4899;">逆行者</div><div class="text-sm text-slate-600 mt-1">拼劲足，容易透支</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 高·高·低</span><div class="font-bold text-lg" style="color:#06b6d4;">局外人</div><div class="text-sm text-slate-600 mt-1">自洽，不慌，少前冲</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 低·高·低</span><div class="font-bold text-lg" style="color:#10b981;">守望者</div><div class="text-sm text-slate-600 mt-1">情商高，行动受限</div></div>
+        <div class="logic-card"><span class="logic-axes">信·能·动 低·低·低</span><div class="font-bold text-lg" style="color:#64748b;">探索者</div><div class="text-sm text-slate-600 mt-1">潜能丰富，暂时搁浅</div></div>
+      </div>
+      <div class="text-center text-xs text-slate-400 mt-4">三个坐标轴 = 信念 / 能力 / 动力，每个坐标轴只有高 / 低两种状态。</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold mb-4">8 种类型 = 2³ 的数学必然</div>
+      <div class="space-y-3 text-slate-700">
+        <p>• 每个人在 <strong>3 个层级</strong>（信念/能力/动力）上各有高/低之分</p>
+        <p>• 排列组合：2 × 2 × 2 = 8 种穷举型</p>
+        <p>• 这不是李中莹老师随便起的 8 个名字，而是<strong>覆盖所有可能心理组合的完整解</strong>——你必然落在其中之一</p>
+        <p>• 同时，每个<strong>子领域</strong>也用同样逻辑生成 8 种领域型报告</p>
+      </div>
+      <div class="mt-6 p-5 rounded-xl" style="background: var(--navy-900); color: white;">
+        <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">为什么这样推导</div>
+        <p class="text-sm">穷举式的 2³ 结构，使系统能够较清晰地识别用户在哪一层相对薄弱、当前更适合优先关注哪些能力。相较于更偏类型识别的工具，这一结构更聚焦于“具体卡点”。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S7 8 TYPES WALL ================== -->
+<section class="section" id="s7" data-title="8类型一览" style="background: #f8fafc;">
+  <div class="section-tag">框架五</div>
+  <h2 class="section-title">8 种处事模式全景</h2>
+  <p class="section-sub mb-10">每个类型都有专属的插画形象、关键词和深度报告体系。</p>
+  <div class="type-grid">
+    <div class="type-card">
+      <div class="thumb"><img src="01 开拓者.png" alt="开拓者"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 高·高·高</span>
+        <div class="font-bold text-lg" style="color: #f97316;">01 · 开拓者</div>
+        <div class="text-xs text-slate-500 mt-1">内核稳 · 从容</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="02 追逐者.png" alt="追逐者"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 低·高·高</span>
+        <div class="font-bold text-lg" style="color: #ef4444;">02 · 追逐者</div>
+        <div class="text-xs text-slate-500 mt-1">停不下来 · 身体易垮</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="03 实心人.png" alt="实心人"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 高·低·高</span>
+        <div class="font-bold text-lg" style="color: #f59e0b;">03 · 实心人</div>
+        <div class="text-xs text-slate-500 mt-1">真诚 · 好心办错事</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="04 隐士.png" alt="隐士"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 高·低·低</span>
+        <div class="font-bold text-lg" style="color: #8b5cf6;">04 · 隐士</div>
+        <div class="text-xs text-slate-500 mt-1">想得开 · 行动受限</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="05 逆行者.png" alt="逆行者"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 低·低·高</span>
+        <div class="font-bold text-lg" style="color: #ec4899;">05 · 逆行者</div>
+        <div class="text-xs text-slate-500 mt-1">不肯认输 · 容易透支</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="06 局外人.png" alt="局外人"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 高·高·低</span>
+        <div class="font-bold text-lg" style="color: #06b6d4;">06 · 局外人</div>
+        <div class="text-xs text-slate-500 mt-1">看清 · 错失机会</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="07 守望者.png" alt="守望者"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 低·高·低</span>
+        <div class="font-bold text-lg" style="color: #10b981;">07 · 守望者</div>
+        <div class="text-xs text-slate-500 mt-1">稳当 · 与人生隔离</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="thumb"><img src="08 探索者.png" alt="探索者"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 低·低·低</span>
+        <div class="font-bold text-lg" style="color: #64748b;">08 · 探索者</div>
+        <div class="text-xs text-slate-500 mt-1">钝感 · 暂时搁浅</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S8 PART 1 SUMMARY ================== -->
+<section class="section" id="s8" data-title="P1小结" style="background: linear-gradient(135deg, var(--navy-900), #1e3a8a); color: white;">
+  <div class="part-badge mb-6" style="background: var(--orange-500); color: white;">框架小结</div>
+  <h2 class="section-title" style="color: white;">以上，是《李中莹·处事模式测评》的整体框架</h2>
+  <div class="grid grid-cols-3 gap-6 mt-10">
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-3">理论根基</div>
+      <p style="line-height: 1.8;">基于李中莹老师的 NLP 心理学体系，覆盖 BVR、三件事法则、序位、心锚等核心概念。</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-3">测评结构</div>
+      <p style="line-height: 1.8;">36 题 → 6 个子维度得分 → 3 层综合判定 → 8 种处事模式 + 6 个领域的独立报告。</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-3">用户价值</div>
+      <p style="line-height: 1.8;">不止呈现“你是什么类型”，更进一步呈现你在不同生活场景中的典型表现、主要卡点与可尝试的调整方向。</p>
+    </div>
+  </div>
+  <div class="mt-12 text-center">
+    <div class="text-2xl font-bold mb-2">接下来，进入报告成品示例。</div>
+    <div class="text-orange-400 text-lg">↓ 进入报告示例：以「追逐者」为例，看完整成品</div>
+  </div>
+</section>
+
+<!-- ================== S9 USER JOURNEY ================== -->
+<section class="section" id="s9" data-title="用户旅程">
+  <div class="part-badge mb-6">报告成品</div>
+  <h2 class="section-title">用户完整体验路径</h2>
+  <p class="section-sub mb-12">从扫码进入到拿到完整报告，全流程约 12 分钟。</p>
+  <div class="journey">
+    <div class="journey-step">
+      <div class="step-num">1</div>
+      <div class="step-title">扫码进入</div>
+      <p class="step-desc">公众号 / 小程序 / H5</p>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">2</div>
+      <div class="step-title">36 题答题</div>
+      <p class="step-desc">约 8 分钟<br>Likert 5 分制</p>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">3</div>
+      <div class="step-title">算法计算</div>
+      <p class="step-desc">6 维分<br>→ 8 型判定</p>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">4</div>
+      <div class="step-title">结果型呈现</div>
+      <p class="step-desc">类型插画<br>+ 整体画像</p>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">5</div>
+      <div class="step-title">6 领域报告</div>
+      <p class="step-desc">事业/伴侣/亲子<br>人际/情绪/个人</p>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">6</div>
+      <div class="step-title">课程衔接</div>
+      <p class="step-desc">NLP 执行师<br>认证课</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S10 LIKERT DEMO ================== -->
+<section class="section" id="s10" data-title="答题界面" style="background: #f8fafc;">
+  <div class="section-tag">答题界面</div>
+  <h2 class="section-title">用户答题体验</h2>
+  <p class="section-sub mb-10">每道题都是具体的生活情境陈述，让用户凭直觉作答。</p>
+  <div class="likert">
+    <div class="flex items-center justify-between mb-6">
+      <div class="text-sm text-slate-500">第 <span id="qNum">8</span> 题 / 共 36 题</div>
+      <div class="text-xs text-orange-500 font-semibold">人际关系 · 信念弹性</div>
+    </div>
+    <div class="w-full bg-slate-200 h-1 rounded-full mb-8">
+      <div class="bg-orange-500 h-1 rounded-full" style="width: 22%;"></div>
+    </div>
+    <div class="likert-question" id="likertQ">当一段关系出现问题时，我能从对方的角度想到几种不同的可能性。</div>
+    <div class="likert-scale">
+      <div class="likert-btn" onclick="pickLikert(this, 1)">1<div class="lab">非常不符合</div></div>
+      <div class="likert-btn" onclick="pickLikert(this, 2)">2<div class="lab">不太符合</div></div>
+      <div class="likert-btn" onclick="pickLikert(this, 3)">3<div class="lab">中立</div></div>
+      <div class="likert-btn selected" onclick="pickLikert(this, 4)">4<div class="lab">比较符合</div></div>
+      <div class="likert-btn" onclick="pickLikert(this, 5)">5<div class="lab">非常符合</div></div>
+    </div>
+    <div class="mt-8 flex justify-end gap-3">
+      <button onclick="prevQ()" class="px-6 py-2 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-100">上一题</button>
+      <button onclick="nextQ()" class="px-6 py-2 rounded-full bg-orange-500 text-white hover:bg-orange-600">下一题 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S11 RESULT HERO ================== -->
+<section class="section" id="s11" data-title="结果型">
+  <div class="section-tag">整体画像示例</div>
+  <h2 class="section-title">假设用户被判定为「追逐者」</h2>
+  <p class="section-sub mb-10">这是结果落地页：插画 + 三轴标签 + 关键词云 + 整体画像。</p>
+  <div class="result-hero">
+    <img src="02 追逐者.png" alt="追逐者">
+    <div>
+      <div class="text-orange-400 text-sm tracking-widest font-semibold mb-2">类型 02 · 信低 · 能高 · 动高</div>
+      <h3 class="text-5xl font-extrabold mb-4">追逐者</h3>
+      <div class="mb-4">
+        <span class="keyword-chip">停不下来</span>
+        <span class="keyword-chip">在做事中获得满足感</span>
+        <span class="keyword-chip">身体容易垮</span>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <div class="flex-1 bg-blue-500/20 border border-blue-400 rounded-lg p-3 text-center">
+          <div class="text-xs text-blue-300">信念层</div>
+          <div class="text-lg font-bold text-blue-400">低</div>
+        </div>
+        <div class="flex-1 bg-emerald-500/20 border border-emerald-400 rounded-lg p-3 text-center">
+          <div class="text-xs text-emerald-300">能力层</div>
+          <div class="text-lg font-bold text-emerald-400">高</div>
+        </div>
+        <div class="flex-1 bg-orange-500/20 border border-orange-400 rounded-lg p-3 text-center">
+          <div class="text-xs text-orange-300">动力层</div>
+          <div class="text-lg font-bold text-orange-400">高</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完整整体画像 -->
+  <div class="card mt-8" style="background: white; border-left: 4px solid var(--orange-500); padding: 2.5rem 3rem;">
+    <div class="text-orange-600 text-xs font-bold tracking-widest mb-4">📜 完整整体画像评语</div>
+    <div class="space-y-4 text-slate-700" style="line-height: 1.95; font-size: 1.02rem;">
+      <p>这一类型的用户，常常会被身边人视为<strong>"特别能干"</strong>的人。事情交到他们手上，周围人往往更放心；无论在工作还是关系中，他们通常承担了不少责任。</p>
+      <p>可是，即便你已经做得比绝大多数人都多，你心里那个<strong>"够了"</strong>的开关，好像从来没打开过。对你来说，如何让自己真正放松下来，是一项需要认真学习的功课。</p>
+      <p>从李中莹老师的体系来看，这通常与「处事模式」中的<strong>信念层限制</strong>有关，例如：<strong>"我必须做到，别人才会觉得我够好。"</strong></p>
+      <p>你的能力是真的，你的努力也是真的，但这些都没有真正喂养到你内在那个最深的“我”。你的忙碌，更多源自于在内心深处<strong>"不敢停下来"</strong>。你害怕一旦自己没做好，就会失去价值。</p>
+      <p>这种模式可能会安静地影响你生活的不同方面：你的事业可能很好但很难真的开心，你在亲密关系里习惯付出但很少索取，你对孩子的期待里有自己的影子，你的身体常常比你先一步喊累。</p>
+      <p>接下来的报告会带你走进自己内在的具体地图——你哪里弦绷得最紧、哪里能松下来、哪里其实早就不需要再用力了。那里有一个<strong>不必再证明自己</strong>也活得很好的版本，正在等你。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S12-S17 6 LIFE DOMAIN TABS ================== -->
+<section class="section" id="s12" data-title="6领域报告" style="background: #f8fafc; min-height: 130vh;">
+  <div class="section-tag">深度报告展示</div>
+  <h2 class="section-title">「追逐者」× 6 大生活领域报告</h2>
+      <p class="section-sub mb-8">同一个类型，在每个生活领域都有独立的深度分析。这是测评内容的核心特点，也是它与常见类型工具的重要差异之一。</p>
+  <div class="tab-bar" id="tabBar">
+    <div class="tab-btn active" onclick="switchTab('career', this)">💼 事业财富</div>
+    <div class="tab-btn" onclick="switchTab('love', this)">💞 伴侣婚姻</div>
+    <div class="tab-btn" onclick="switchTab('parent', this)">👶 亲子养育</div>
+    <div class="tab-btn" onclick="switchTab('social', this)">🤝 人际关系</div>
+    <div class="tab-btn" onclick="switchTab('emotion', this)">🌿 情绪健康</div>
+    <div class="tab-btn" onclick="switchTab('growth', this)">🌱 个人发展</div>
+  </div>
+
+  <!-- TAB: career -->
+  <div class="tab-pane active" id="tab-career">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">信念弹性 · 自我价值 · 行动变通</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"能抓住机会，却总觉得自己不配拥有更多"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">后续承接</div><div class="font-semibold">服务承接示例 01：事业建议场景</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">事业与财富的积累，不仅取决于能力与机会，也取决于<strong>个体在压力与变化中的心理调节质量</strong>。以下内容基于你在<strong>信念弹性、自我价值根基、行动变通力</strong>三个维度的测评得分，为你提供深度职业解析与发展建议。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>现状观察</h4>
+      <p>在发展事业的过程中，你有着极强的生命力。无论外部环境如何变化，你都近乎本能地，<strong>在缝隙里看见光，在角落里找到机会</strong>。这让你撑过了不少别人扛不下来的时刻。</p>
+      <p>但你常常忽略自己的能力和价值，潜意识里总觉得<strong>"好东西大概不太属于我，我多半只能挑选被剩下的。"</strong></p>
+      <p>这会让你的财富图景演变成：小机会一个接一个，加起来不少，但缺一笔真正能让你“翻身”的；事情做成了一件又一件，但身份始终漂着，没有一个你敢说<strong>"这就是我"</strong>的位置。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>财富逻辑</h4>
+      <p>你的财富可能会呈现出<strong>"零碎流水"</strong>模式——多个小渠道、多种小机会，加起来不少，但缺一个能撬动量级跃升的杠杆。</p>
+      <p>深层的真相是：你的<strong>变通力</strong>让你能抓得住小机会，但来自<strong>信念</strong>和<strong>自我价值</strong>层面的阻力，让大机会从你身边经过时，本能反应常常是<strong>"那不太是给我的。"</strong></p>
+      <p>你的财富不太是被外界限制住的，更像是被你内在的<strong>"心理上限"</strong>提前封顶了。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">3</span>核心卡点</h4>
+      <p><strong>卡点一：自我压价。</strong>别人问“这个多少钱”“这件事你能做吗”，你心里的数字往往要在嘴上再打个八折说出来。你给自己的解释是“先成交再说”，但一年下来你会发现，你接的活很多，赚到的钱却和工作量不成比例。</p>
+      <p><strong>卡点二：对长期投入有恐惧。</strong>做副业、深耕一个领域、攒一项专业资产，这些事你都想过，但启动几次都没坚持下来。潜意识里你不太相信自己能<strong>"持续地拥有"</strong>好东西，所以一开始就给自己留了退路。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">4</span>职业导航</h4>
+      <p>适合你的是<strong>"轻资产 + 多触点"</strong>路径：自由职业者、销售、中介、自媒体、小型贸易、灵活就业。这些路径能发挥你的灵活。</p>
+      <p>但更重要的建议是：<strong>选一个领域，坚持做满 1000 天</strong>。这不是为了赚钱，而是为了让你体验一次“我也能拥有一个深耕的身份”。</p>
+    </div>
+    <div class="single-asset">
+      <img src="事业02 .png" alt="追逐者事业建议图">
+    </div>
+    <div class="course-callout mt-6">
+      <div class="tag">服务承接示例 01</div>
+      <div class="font-bold text-lg text-slate-900 mb-2">如果你想走得久、走得远，又不那么累</div>
+      <p class="text-sm text-slate-700 leading-relaxed">李中莹老师亲授的《NLP专业执行师证书班》能帮你重建信念和能力这两层，让你做事的动力从“怕输”切换成“想要”，从靠咬牙撑住，到真正游刃有余。</p>
+    </div>
+  </div>
+
+  <!-- TAB: love -->
+  <div class="tab-pane" id="tab-love">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">人际界限 · 情绪解码 · 系统归属</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"自然舒展，能让关系真正过下去"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">特色板块</div><div class="font-semibold">伴侣匹配警示 + 修行建议</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">亲密关系不只是"找一个对的人"，<strong>它同时是你和自己的关系、你和原生家庭的关系，在另一个人身上的延续</strong>。无论你正在恋爱、面对婚姻、走出一段关系，或者正在思考要不要再爱一次，以下内容基于你在<strong>人际界限、情绪解码、系统归属</strong>三个维度的得分，为你提供一份关于情感模式的深度解析。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>爱的底色</h4>
+      <p>亲密关系对你来说，<strong>是自然而舒展的</strong>。你身上有李中莹老师在《亲密关系全面技巧》里讲的那两个核心条件——<strong>对对方没有过多要求，也能照顾自己的人生</strong>。</p>
+      <p>即便和伴侣发生冲突，你常常能先开口解决问题，但并非讨好；当两个人意见不合时，你也能听进去对方的想法，同时不丢失自己；和伴侣的家人，也能保持得体的距离感。</p>
+      <p>在亲密关系中，这一类型通常更有机会建立一种<strong>能够长期维系、相对稳定</strong>的相处方式。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>伴侣匹配与情境警示</h4>
+      <p>这一类型的人，大概率会匹配到以下两种类型的伴侣——</p>
+      <p><strong>第一类是和你旗鼓相当的成熟伴侣。</strong>这种关系的好处是稳，但要警惕<strong>两个人各自精彩，却没有发展出深度的亲密和连接</strong>。</p>
+      <p><strong>第二类是不如你成熟的伴侣。</strong>你的稳定吸引 ta，但久了你可能成为 ta 的情绪容器，自己的需求始终说不出口。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">3</span>勇敢者的修行</h4>
+      <p>你不太需要"修复"什么，<strong>你需要的是让关系更深一些</strong>。</p>
+      <p><strong>第一件事，主动让对方为你做点什么。</strong>比如说，让 ta 替你拿快递、做晚饭、在你疲惫时陪你说话。<strong>伴侣需要那份"我对你有意义"的满足感，而你需要给 ta 机会。</strong></p>
+      <p><strong>第二件事，"共同信念扩张"的练习。</strong>这是李老师给婚姻长久的人开出的具体方法——每两三个月，和伴侣坐下来聊一个新话题：我们休假时想去哪里、我们对孩子的教育想法、我们这两年最重要的目标是什么。在沟通的过程中，<strong>让两个人的内心地图重新对齐</strong>。</p>
+      <p><strong>第三件事，允许自己偶尔脆弱一下。</strong>你很多时候活成了一个让人放心的样子，但<strong>真正的亲密是，双方都敢示弱</strong>。当你愿意在伴侣面前说一句"我今天真的撑不住了"，那一刻，会让你们的关系更加亲密和深化。</p>
+    </div>
+  </div>
+
+  <!-- TAB: parent -->
+  <div class="tab-pane" id="tab-parent">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">信念弹性 · 人际界限 · 系统归属</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"看见眼前这个具体的孩子"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">特色板块</div><div class="font-semibold">养育风格 + 潜在影响 + 调整建议</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">亲子养育的核心，不只是"爱孩子"，更重要的是让孩子在关系里感受到：<strong>我被理解，也被尊重。但与此同时，也能给自己留出空间，照顾好自己的情绪。</strong>以下内容基于你在<strong>系统归属、人际界限、信念弹性</strong>三个维度的得分，为你提供一份关于"你会如何与下一代相处"的深度解析。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>养育风格</h4>
+      <p>在亲子情境里，你心里有规矩、有原则、有对一个家应有样子的清晰想象。难得的是，你<strong>严格但不越界</strong>。比如说，不会擅闯孩子的房间，随意翻 ta 的东西。</p>
+      <p>但有时候，你对孩子的爱，可能会被<strong>规则盖住</strong>。而你心里的那份在意、那份骄傲、那句“我以你为荣”，往往说不出口。你可能更习惯通过行动表达关心，但孩子需要听见这些认可的声音。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>潜在影响</h4>
+      <p>在这种养育方式下成长的孩子，往往会表现出较强的<strong>自律性、规则感与家庭认同感</strong>，在学习或执行任务时通常更自觉，也更追求完成度。</p>
+      <p>但“做到才肯定、不做到就批评”的标准，会让孩子<strong>特别怕失败、抗挫力反而弱</strong>。考试焦虑、偏科加重的情况也常见，因为 ta 把“达不到”等同于“我让爸爸/妈妈失望”。</p>
+      <p>成年后，这样的孩子通常<strong>外在很优秀</strong>，能完成很多事，事业上有韧性，但<strong>内在不太敢松懈</strong>。还有一点，ta 心里会一直在等父母的一句肯定，哪怕 ta 已经四十岁了。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">3</span>育儿困境</h4>
+      <p>在亲子情境里，这种组合最容易卡的几件事是——</p>
+      <p><strong>第一，那套清晰的成长路径在变化极快的时代里反而成为束缚。</strong>孩子需要试错的空间，但你给的是一条直线。</p>
+      <p><strong>第二，以为给的是规则，但孩子接收到的是“达不到就糟了”的紧张。</strong>长此以往 ta 不敢冒险、不敢失败、不敢让你失望。</p>
+      <p><strong>第三，爱是真实的、深沉的，但需要被翻译。</strong>孩子听不懂沉默里的爱。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">4</span>调整建议</h4>
+      <p>下次当孩子考砸、做了你不认同的选择时，试着不要立刻进入评判，先在心里问两句话：<strong>这件事 ta 学到了什么？我学到了什么关于 ta 的？</strong></p>
+      <p>此外，你需要试着练习<strong>把事和人分开</strong>。比如孩子这次没考好，可以这样说：“这次没达到你想的，肯定难过；但你考前那一周认真复习，这件事我看见了。”</p>
+      <p>最难、但最关键的一件事，是<strong>每周对孩子说一次“我以你为荣”</strong>。不是因为 ta 考了多少分，而是因为 ta 是 ta。规则可以是骨架，但爱需要被说出来，孩子才会真正相信它存在。</p>
+    </div>
+    <div class="course-callout dark mt-6">
+      <div class="tag">服务承接示例 02</div>
+      <div class="font-bold text-lg mb-2">如果孩子开始出现考试焦虑、偏科严重、不敢尝试新事物</div>
+      <p class="text-sm leading-relaxed text-slate-200">李中莹老师的《NLP执行师认证课程》能帮你从“立规矩”走向“会肯定”，把规则感保留下来，也把孩子真正需要听见的支持说出来。</p>
+    </div>
+  </div>
+
+  <!-- TAB: social -->
+  <div class="tab-pane" id="tab-social">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">信念弹性 · 情绪解码 · 人际界限</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"不必经营，关系自然流动"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">特色板块</div><div class="font-semibold">滋养区 / 消耗区 / 成长建议</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">高质量的人际连接，并不是一味迎合，而是<strong>边界清楚、能识别情绪背后的信息，并在误解、拒绝或冲突后保持认知弹性</strong>。以下内容基于你在<strong>人际界限、情绪解码、信念弹性</strong>三个维度的测评得分，为你提供人际模式解析与成长建议。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>社交模式：你在不同圈层的样子</h4>
+      <p>如果让你身边的人来描述和你的关系，<strong>“靠谱”“有原则”“说到做到”</strong>会是高频词。朋友会说“答应 ta 的事一定办到”，同事会说“和 ta 共事不用担心被坑”。</p>
+      <p>这一类型在人际关系中的一个明显优势，是可靠与稳定。一旦认定一段关系，往往愿意投入，也因此更容易积累较高的信任度。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>滋养区：让你的关系更上一层的人</h4>
+      <p>虽然你不容易被关系绊倒，但有几类人对你来说是真正的“加分项”——</p>
+      <p><strong>1）言行一致的实在人：</strong>说到做到，和你一样认真负责、有原则、可信赖。</p>
+      <p><strong>2）温和善意的朋友：</strong>尊重你的原则，但能在你钻牛角尖时陪你换个角度看。</p>
+      <p><strong>3）价值观相近但不刻板的伙伴：</strong>对人对事有底线，但不会把底线变成尺子去量别人。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">3</span>消耗区：你需要留意的少数场景</h4>
+      <p>让你心累的，往往不是关系本身，而是别人的“不守规矩”——</p>
+      <p><strong>1）朋友违约在先，一句“哎呀别太计较”就翻篇了，</strong>你却气得整夜睡不着。</p>
+      <p><strong>2）同事承诺的事临时改了又改，</strong>你嘴上说“没关系”，心里反复重温这种失望。</p>
+      <p><strong>3）家人做了一件你认为“原则上不对”的事，</strong>你忍着没说，但接下来一周看 ta 都有点不顺眼。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">4</span>成长建议</h4>
+      <p>对于同一件事，如果换一个角度去看，可能意义就变了。</p>
+      <p>下次因为别人的行为生气时，停下来问自己两个问题：<strong>“这是真的违背道义，还是只是不符合我的偏好？”</strong>以及<strong>“如果我现在站在对方的处境里，能不能想出三种善意的解释？”</strong></p>
+      <p>你会发现，80% 的愤怒其实只是偏好，不是道义。练习这两个问题，不是要你放弃原则，而是把<strong>“对错”和“关系”分开</strong>。</p>
+      <p>你的原则是这个时代稀缺的品质。<strong>学会对世界宽容一寸，是在守住“道”的同时，也让自己更轻松、少内耗。</strong></p>
+    </div>
+  </div>
+
+  <!-- TAB: emotion -->
+  <div class="tab-pane" id="tab-emotion">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">信念弹性 · 自我价值 · 情绪解码</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"读懂身体的慢性信号"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">特色板块</div><div class="font-semibold">身体信号 + NLP 心锚练习</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">身心健康并不只靠意志维持，更取决于<strong>能否读懂情绪、灵活应对压力，并把自我价值从外部成败中分离出来</strong>。以下内容基于你在<strong>情绪解码、信念弹性、自我价值根基</strong>三个维度的测评得分，为你提供深层模式解析与成长建议。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>觉察身体信号</h4>
+      <p>当某种情绪升起来的时候，身体通常会先有反应。很多时候你还没意识到“我在难过”或者“我在紧张”，但<strong>心跳、呼吸、肩颈、肠胃，已经有了感觉</strong>。</p>
+      <p>对你来说，常见的可能有这样几种：<strong>心慌或者胸口发闷、睡眠比较浅、情绪一来胃就不太舒服、肩颈长期紧绷</strong>。</p>
+      <p>这些反应背后的原因可能有很多种，如果身体一直感到不舒服，要及时看医生，同时也要留意自己近期的压力和状态。</p>
+      <p>也需要注意的是，成年人的生活里，很多压力是慢性的，没办法"一键消除"。所以要慢慢学着和这些压力、身体的不适或慢性疼痛相处。<strong>在它们存在的同时，依然能照顾好自己</strong>。这是一项可以练习的能力。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>发展调节能力：3 个 NLP 练习</h4>
+      <p><strong>1）生理平衡练习。</strong>当你心里一沉、或者反复在某件事上自责的时候，找一个位置坐下来或者躺下来，做三件事：把双脚交叉叠起来；把双手在胸前交叠握住；把舌尖轻轻顶在上颚。保持这个姿势 3 分钟，专注感受自己的心跳。</p>
+      <p><strong>2）建立“心锚”。</strong>挑一个你心里比较平静的时刻，把一只手轻轻放在心口，在心里默念一句“今天这样，已经够了”。坚持几天，这个动作会和“被允许”的感觉绑在一起，帮助你在自我审视的时候先停下来。</p>
+      <p><strong>3）练习腹式呼吸。</strong>平躺在床上，把一只手放在小腹。慢慢吸气，让小腹鼓起来；慢慢呼气，让小腹落下去。<strong>吸气 4 秒、呼气 6 秒，重复 3 分钟</strong>。这几分钟是给身体一个“清空”的机会，让那些积在心里的、暂时背着的情绪慢慢沉下去。</p>
+    </div>
+  </div>
+
+  <!-- TAB: growth -->
+  <div class="tab-pane" id="tab-growth">
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card"><div class="text-xs text-slate-400 mb-1">对应维度</div><div class="font-semibold">信念弹性 · 情绪解码 · 行动变通</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">领域关键句</div><div class="font-semibold text-orange-600">"从'必须搞定'转向'可以选择'"</div></div>
+      <div class="card"><div class="text-xs text-slate-400 mb-1">特色板块</div><div class="font-semibold">看见自己 + 丰盛自己</div></div>
+    </div>
+    <div class="card mb-5" style="background: #fff7ed; border: 1px dashed var(--orange-400);">
+      <div class="text-xs font-bold text-orange-700 tracking-widest mb-2">领域导语</div>
+      <p class="text-slate-700">个人成长的关键，不是机械地更努力，而是<strong>能在受挫时调整认知、在情绪中保持觉察，并依据反馈不断修正行动</strong>。以下内容基于你在<strong>信念弹性、情绪解码、行动变通力</strong>三个维度的测评得分，为你提供个人成长领域的观察与建议。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">1</span>【看见自己】</h4>
+      <p>可能近些年你也有感受，这个时代越来越卷了。工作群没有下班时间，孩子的教育不能掉队，父母的健康开始要操心，AI 还在每隔几个月改写一次行业规则，不学就慌，担心自己掉队。</p>
+      <p>在这样的节奏里，会感到累、烦、紧绷，是再自然不过的事。即便如此，事情交到手上也常常能搞定，这是你独有的能力。只是再能干的人，也会有撑不下去的时候，所以在努力做事的同时，也别忘了关照内心。</p>
+      <p>可以把节奏适当放缓一点，让前进更可持续。当一个人能在忙碌中给自己留一点喘息，能在做事之外听见自己的感受，整个人就会从<strong>“被推着走”变成“更有掌控感”</strong>。</p>
+    </div>
+    <div class="report-block">
+      <h4><span class="num">2</span>【丰盛自己】</h4>
+      <p>那些陪你走到今天的内在信念——“我必须做到”“不努力就会被落下”“停下来就完了”——曾经是非常有用的，推动你拿到了今天的位置，扛过了别人扛不下来的事。</p>
+      <p>只是对如今的你而言，它们没有那么适用了，反而在你想更松弛、更自由的时候，成了一种无形的约束。走向改变，不是和这些信念对抗，而是让它们随着新的需要慢慢更新。</p>
+      <p>可以从一个很小的切口开始：改变你跟自己说话的方式。<strong>语言不只是在描述你的世界，语言也在塑造你的世界</strong>。如果你愿意，可以试试这几句替换：</p>
+      <p>1）把“我必须做完”换成<strong>“我选择把它做完，因为……”</strong>——帮你从被推着走，变得更有掌控感。</p>
+      <p>2）把“我不能出错”换成<strong>“我允许自己慢慢学”</strong>——拿掉绝对化的词，呼吸就回来了。</p>
+      <p>3）把“我又没坚持下来”换成<strong>“我已经开始了，这一次比上一次多走了一步”</strong>——用看见代替否定，下一步才迈得出去。</p>
+      <p>更深一层，有一句话可以放在心里反复念：<strong>"我有能力，我有资格，我可以活成我想要的样子。"</strong>当你真正相信它，底气会慢慢长出来。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S18 CROSS-DOMAIN ================== -->
+<section class="section" id="s18" data-title="跨领域强弱地图">
+  <div class="section-tag">深度可视化</div>
+  <h2 class="section-title">追逐者 × 6 领域强弱地图</h2>
+  <p class="section-sub mb-10">“追逐者”不是处处薄弱，而是<strong>事业和行动力很强，情绪与自我价值更容易透支</strong>。每一行都是该领域的对应维度、示意得分与一句洞察。</p>
+
+  <div class="space-y-3">
+    <!-- 事业财富 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">💼 事业财富</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">信念弹性 · 自我价值 · 行动变通</div>
+          <div class="text-lg font-extrabold" style="color: #16a34a;">4.5 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 90%; background: linear-gradient(90deg, #22c55e, #16a34a);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">✅ <strong>强项明显</strong>——抓机会快、能撑事，但容易把“拼”当成默认模式。</div>
+      </div>
+    </div>
+    <!-- 人际关系 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">🤝 人际关系</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">信念弹性 · 情绪解码 · 人际界限</div>
+          <div class="text-lg font-extrabold" style="color: #16a34a;">4.2 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 84%; background: linear-gradient(90deg, #22c55e, #16a34a);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">✅ <strong>关系靠谱</strong>——别人觉得你可靠、有原则，但你自己更容易被“不公平”卡住。</div>
+      </div>
+    </div>
+    <!-- 个人发展 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">🌱 个人发展</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">信念弹性 · 情绪解码 · 行动变通</div>
+          <div class="text-lg font-extrabold" style="color: #ca8a04;">3.9 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 78%; background: linear-gradient(90deg, #fbbf24, #ca8a04);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">⚠️ <strong>需要松弛</strong>——会做事，也会扛事，但更需要把“我必须”换成“我选择”。</div>
+      </div>
+    </div>
+    <!-- 伴侣婚姻 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">💞 伴侣婚姻</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">人际界限 · 情绪解码 · 系统归属</div>
+          <div class="text-lg font-extrabold" style="color: #16a34a;">4.3 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 86%; background: linear-gradient(90deg, #22c55e, #16a34a);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">✅ <strong>能力在线</strong>——亲密关系里能处理情绪和边界，但不一定习惯表达自己的需要。</div>
+      </div>
+    </div>
+    <!-- 亲子养育 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">👶 亲子养育</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">信念弹性 · 人际界限 · 系统归属</div>
+          <div class="text-lg font-extrabold" style="color: #ca8a04;">3.8 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 76%; background: linear-gradient(90deg, #fbbf24, #ca8a04);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">⚠️ <strong>盲区</strong>——规则和要求容易盖住爱意，孩子更容易在意“我有没有让你失望”。</div>
+      </div>
+    </div>
+    <!-- 情绪健康 -->
+    <div class="card flex items-center gap-4" style="padding: 1.25rem 1.75rem; border-left: 4px solid #ef4444;">
+      <div class="w-32 flex-shrink-0">
+        <div class="text-xs text-slate-400">领域</div>
+        <div class="font-bold text-lg">🌿 情绪健康</div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs text-slate-500">信念弹性 · 自我价值 · 情绪解码</div>
+          <div class="text-lg font-extrabold" style="color: #dc2626;">3.3 / 5</div>
+        </div>
+        <div class="dim-bar"><span style="width: 66%; background: linear-gradient(90deg, #fb923c, #dc2626);"></span></div>
+        <div class="text-sm text-slate-700 mt-2">🚨 <strong>最大盲区</strong>——紧绷、焦虑和“停下来就慌”的感觉，会先落到身体上。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mt-6">
+    <div class="p-5 rounded-xl" style="background: var(--orange-50); border: 1px dashed var(--orange-400);">
+      <div class="text-orange-700 font-bold text-sm mb-2">💡 这意味着</div>
+      <p class="text-sm text-slate-700">测评结果不是一个静态标签，而是<strong>一份分领域的强弱地图</strong>——帮助用户理解优势所在、盲区所在，并看到更有针对性的调整方向。</p>
+    </div>
+    <div class="p-5 rounded-xl" style="background: var(--navy-900); color: white;">
+      <div class="text-orange-400 font-bold text-sm mb-2">🎯 对产品的启示</div>
+      <p class="text-sm">同一个“追逐者”在 6 个领域也不是一个样子。这种<strong>一型多面</strong>的内容颗粒度，是 MBTI 等竞品很难给到的差异化价值。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S19 TYPE COMPARE ================== -->
+<section class="section" id="s19" data-title="类型对比" style="background: #f8fafc;">
+  <div class="section-tag">横向对比</div>
+  <h2 class="section-title">不同类型拿到的报告，差异有多大？</h2>
+  <p class="section-sub mb-10">选 4 种典型类型横向对照——每种类型的"核心卡点"和"成长路径"截然不同。</p>
+  <div class="compare-table">
+    <table>
+      <thead>
+        <tr>
+          <th class="dim" style="width: 14%;">维度</th>
+          <th>🌅 开拓者<br><span class="text-xs font-normal opacity-70">信高·能高·动高</span></th>
+          <th>🏃 追逐者<br><span class="text-xs font-normal opacity-70">信低·能高·动高</span></th>
+          <th>🧘 隐士<br><span class="text-xs font-normal opacity-70">信高·能低·动低</span></th>
+          <th>🌫️ 探索者<br><span class="text-xs font-normal opacity-70">信低·能低·动低</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>核心特征</strong></td>
+          <td>内核稳，三层同时在线</td>
+          <td>能力强但内核脆弱，停不下来</td>
+          <td>心态好但主动放手</td>
+          <td>钝感搁浅，需要重燃</td>
+        </tr>
+        <tr>
+          <td><strong>事业表现</strong></td>
+          <td>整合型角色，赚钱有节奏</td>
+          <td>事业很好但难真心开心</td>
+          <td>事业稳但少有突破</td>
+          <td>停在不上不下的位置</td>
+        </tr>
+        <tr>
+          <td><strong>亲密关系</strong></td>
+          <td>给予与接收并存</td>
+          <td>习惯付出但很少索取</td>
+          <td>缺乏深度，不远不近</td>
+          <td>说不清的隔离感</td>
+        </tr>
+        <tr>
+          <td><strong>核心卡点</strong></td>
+          <td>从"持续生长"变成"必须前进"</td>
+          <td>"必须做到才够好"的信念</td>
+          <td>把"算了"当成"豁达"</td>
+          <td>3 层同时被一层东西盖住</td>
+        </tr>
+        <tr>
+          <td><strong>李中莹语录</strong></td>
+          <td>"灵活性才是控制大局的力量"</td>
+          <td>"行为不等于身份"</td>
+          <td>"凡事必有至少三个解决方法"</td>
+          <td>"先照顾好自己，才有能力照顾别人"</td>
+        </tr>
+        <tr>
+          <td><strong>推荐课程</strong></td>
+          <td>NLP 专业执行师证书班</td>
+          <td>NLP 专业执行师证书班</td>
+          <td>NLP 专业执行师证书班</td>
+          <td>NLP 执行师认证课程</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-6 p-4 rounded-xl" style="background: white; border-left: 4px solid var(--orange-500);">
+    <p class="text-sm text-slate-700"><strong>注意：</strong>这只是 8 种类型中的 4 种。每种类型在 6 个领域都有<strong>完全独立的</strong>分析文案，不是模板复用。这是产品的内容护城河。</p>
+  </div>
+</section>
+
+<!-- ================== S20 CONCLUSION + COURSE ================== -->
+<section class="section" id="s20" data-title="结语+课程">
+  <div class="section-tag">课程衔接</div>
+  <h2 class="section-title">报告的最后：李中莹语录 + 课程入口</h2>
+  <p class="section-sub mb-10">每个类型的结语都配有相应的语录引导与后续成长服务建议，用于承接用户在报告阅读后的进一步需求。</p>
+  <div class="grid grid-cols-2 gap-6">
+    <div class="end-card">
+      <div class="flex items-start gap-4">
+        <div class="flex-1">
+          <div class="text-xs text-orange-600 font-bold tracking-widest mb-1">追逐者 · 结语</div>
+          <p class="text-slate-700 mb-3 leading-relaxed">作为「追逐者」，你的能力和动力都很强，撑住了很多人和很多事。但你心里那个“够了”的开关，好像从来没打开过，这是因为你最深的信念还没真正稳下来。</p>
+          <p class="text-slate-700 mb-3 leading-relaxed">很多时候，你不是做不到停下来，而是不太敢停下来。你已经习惯把“继续做、继续扛、继续证明自己”当作安全感的来源。对当下的你而言，真正重要的，不只是继续向前，而是慢慢练习把价值感重新放回自己身上。</p>
+          <div class="course-callout mt-4">
+            <div class="tag">服务承接示例 03</div>
+            <p class="text-sm text-slate-700 leading-relaxed mb-3">如果你想找回内核的稳定，不再靠忙碌证明自己，李中莹老师亲授的《NLP专业执行师证书班》能帮你重建信念这一层，让你做事的力量来自内在的充盈，而不是停下来就慌的不安。</p>
+            <button class="px-5 py-2 rounded-full bg-orange-500 text-white font-semibold text-sm">添加助理 → NLP 专业执行师证书班 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="end-card" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-color: #cbd5e1;">
+      <div class="flex items-start gap-4">
+        <div class="flex-1">
+          <div class="text-xs text-slate-600 font-bold tracking-widest mb-1">探索者 · 结语</div>
+          <p class="text-slate-700 mb-3 leading-relaxed">作为「探索者」，你的处事模式正处在一个暂时搁浅的阶段——信念、能力、动力三个层面都需要重新被点燃。但<strong>这只是你眼下的状态，并非你的全部</strong>。</p>
+          <p class="text-slate-700 mb-3 leading-relaxed">李中莹老师讲过一句话——“先照顾好自己，才有能力照顾别人”。对当下的你而言，练习重新对自己好，是这条路真正开始的起点。</p>
+          <div class="course-callout dark mt-4">
+            <div class="tag">系统课程入口</div>
+            <p class="text-sm leading-relaxed text-slate-200 mb-3">如果你想从根本上重新连接这三个层面，李中莹老师亲授的《NLP执行师认证课程》是一份完整的系统路径，从接受自己开始，让信念、能力、动力一层层重新长出来。</p>
+            <button class="px-5 py-2 rounded-full bg-slate-700 text-white font-semibold text-sm">添加助理 → NLP 执行师认证课程 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-6 card">
+    <strong>关键设计：</strong>整体报告结尾并非简单收尾，而是承担“理解之后如何继续”的承接功能。事业建议、亲子建议、整体结语这 3 个位置逐步递进，让后续课程或服务的出现显得更自然。
+  </div>
+</section>
+
+<!-- ================== S21 PART 2 SUMMARY ================== -->
+<section class="section" id="s21" data-title="P2小结" style="background: linear-gradient(135deg, var(--navy-900), #1e3a8a); color: white;">
+  <div class="part-badge mb-6" style="background: var(--orange-500); color: white;">报告小结</div>
+  <h2 class="section-title" style="color: white;">用户花 12 分钟，拿到什么？</h2>
+  <div class="grid grid-cols-4 gap-6 mt-10 mb-10">
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-5xl font-extrabold text-orange-400 mb-2">1</div>
+      <div class="font-semibold mb-1">类型判定</div>
+      <p class="text-sm text-slate-300">8 种处事模式之一，附插画与三轴标签</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-5xl font-extrabold text-orange-400 mb-2">6</div>
+      <div class="font-semibold mb-1">生活领域报告</div>
+      <p class="text-sm text-slate-300">事业/伴侣/亲子/人际/情绪/个人</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-5xl font-extrabold text-orange-400 mb-2">~15</div>
+      <div class="font-semibold mb-1">条具体行动建议</div>
+      <p class="text-sm text-slate-300">含 NLP 心锚、共同信念扩张、语言替换等可操作工具</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      <div class="text-5xl font-extrabold text-orange-400 mb-2">1</div>
+      <div class="font-semibold mb-1">课程入口</div>
+      <p class="text-sm text-slate-300">精准匹配的 NLP 课程，差异化推荐</p>
+    </div>
+  </div>
+  <div class="text-center mt-12">
+    <div class="text-2xl font-bold mb-2">那么，这套产品如何形成完整的产品路径？</div>
+    <div class="text-orange-400 text-lg">↓ 进入 Part 3：商业价值</div>
+  </div>
+</section>
+
+<!-- ================== S22 BUSINESS PYRAMID ================== -->
+<section class="section" id="s22" data-title="商业定位">
+  <div class="part-badge mb-6">商业价值</div>
+  <h2 class="section-title">商业定位：两层产品结构</h2>
+  <p class="section-sub mb-10">从<strong>低门槛体验型产品</strong>到<strong>高价值进阶服务</strong>，形成一条相对清晰的产品承接路径。</p>
+  <div class="grid grid-cols-2 gap-12 items-center">
+    <div class="pyramid">
+      <div class="pyramid-row" style="background: linear-gradient(135deg, #f97316, #ea580c); width: 320px;">
+        <div class="text-xs opacity-80 mb-1">顶层</div>
+        <div class="text-2xl">NLP 认证课程</div>
+        <div class="text-base mt-2 font-semibold">¥19,800</div>
+        <div class="text-xs mt-1 opacity-80">李中莹老师亲授 · 系统化能力升级</div>
+      </div>
+      <div class="pyramid-row" style="background: linear-gradient(135deg, #0f172a, #1e293b); width: 480px;">
+        <div class="text-xs opacity-80 mb-1">底层</div>
+        <div class="text-2xl">付费深度报告 / 1v1 解读</div>
+        <div class="text-base mt-2 font-semibold">¥58</div>
+        <div class="text-xs mt-1 opacity-80">体验入口 · 用户的第一次价值感知</div>
+      </div>
+    </div>
+    <div>
+      <h4 class="font-bold text-xl mb-4">为什么这个结构成立？</h4>
+      <ul class="space-y-3 text-slate-700 leading-relaxed">
+        <li>• <strong>底层承担入口功能</strong>：¥58 报告门槛较低，便于用户先通过一次完整答题，形成初步的自我认知与产品体验。</li>
+        <li>• <strong>报告承担价值建立功能</strong>：48 份子报告以帮助用户更深地看见自己为目标，并提供实用成长建议，在理解与行动之间建立连接。</li>
+        <li>• <strong>顶层承担进阶承接功能</strong>：¥19,800 的 NLP 认证课程，为有更深成长需求的用户提供更系统的学习路径。</li>
+        <li>• <strong>推荐逻辑可以因人而异</strong>：不同类型或不同领域卡点，可以对应不同的后续服务建议，从而提升承接的匹配度。</li>
+      </ul>
+      <div class="mt-6 p-4 rounded-xl" style="background: var(--orange-50); border: 1px dashed var(--orange-400);">
+        <p class="text-sm text-slate-700"><strong>客单价差 340 倍。</strong>低门槛报告负责完成用户教育与初步筛选，后续课程负责承接更深层的成长需求，因此两者并不是替代关系，而是前后衔接的产品关系。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S25 COMPETITOR ================== -->
+<section class="section" id="s25" data-title="竞品对比" style="background: #f8fafc;">
+  <div class="section-tag">VALUE · 04</div>
+  <h2 class="section-title">与主流人格测评的差异化对照</h2>
+  <p class="section-sub mb-10">它并不是替代 MBTI、九型人格等现有工具，而是尝试补足它们在生活场景映射与成长建议上的空白。</p>
+  <div class="compare-table">
+    <table>
+      <thead>
+        <tr>
+          <th class="dim">对比维度</th>
+          <th>MBTI</th>
+          <th>九型人格</th>
+          <th>盖洛普优势</th>
+          <th>大五人格</th>
+          <th style="background: #f97316;">🌟 李中莹·处事模式</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>理论体系</strong></td>
+          <td>荣格类型论</td>
+          <td>苏菲派 + 现代心理学</td>
+          <td>积极心理学</td>
+          <td>词汇学派</td>
+          <td>NLP + 系统排列 + 30 年实战</td>
+        </tr>
+        <tr>
+          <td><strong>行动指导性</strong></td>
+          <td>★★</td>
+          <td>★★</td>
+          <td>★★★★</td>
+          <td>★</td>
+          <td><strong>★★★★★</strong></td>
+        </tr>
+        <tr>
+          <td><strong>生活领域覆盖</strong></td>
+          <td>偏职场</td>
+          <td>偏内心</td>
+          <td>仅职场</td>
+          <td>仅静态描述</td>
+          <td><strong>6 大领域全覆盖</strong></td>
+        </tr>
+        <tr>
+          <td><strong>本土化</strong></td>
+          <td>翻译为主</td>
+          <td>翻译为主</td>
+          <td>翻译为主</td>
+          <td>纯学术</td>
+          <td><strong>原生中文，文化贴合</strong></td>
+        </tr>
+        <tr>
+          <td><strong>课程衔接</strong></td>
+          <td>无</td>
+          <td>零散</td>
+          <td>盖洛普认证</td>
+          <td>无</td>
+          <td><strong>李中莹完整课程体系</strong></td>
+        </tr>
+        <tr>
+          <td><strong>类型颗粒度</strong></td>
+          <td>16 型 × 单维度</td>
+          <td>9 型 × 3 翼</td>
+          <td>34 项优势</td>
+          <td>5 个连续维度</td>
+          <td><strong>8 型 × 6 领域 = 48 子报告</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================== S27 MOAT ================== -->
+<section class="section" id="s27" data-title="护城河" style="background: #f8fafc;">
+  <div class="section-tag">VALUE · 06</div>
+  <h2 class="section-title">护城河：为什么别人难复制</h2>
+  <div class="grid grid-cols-3 gap-6 mt-10">
+    <div class="card" style="border-top: 4px solid #3b82f6;">
+      <div class="text-4xl mb-3">📚</div>
+      <div class="font-bold text-lg mb-2">理论护城河</div>
+      <p class="text-slate-600 text-sm leading-relaxed">36 题题库背后是 NLP 心理学体系 + 李中莹 30 年实战提炼。理论根基扎实，仿冒难做到位。</p>
+    </div>
+    <div class="card" style="border-top: 4px solid #10b981;">
+      <div class="text-4xl mb-3">✍️</div>
+      <div class="font-bold text-lg mb-2">内容护城河</div>
+      <p class="text-slate-600 text-sm leading-relaxed">8 类型 × 6 领域 = 48 份独立深度报告 + 8 个结语。约 8 万字原创内容，结构化复用难度高。</p>
+    </div>
+    <div class="card" style="border-top: 4px solid #f97316;">
+      <div class="text-4xl mb-3">🌟</div>
+      <div class="font-bold text-lg mb-2">IP 护城河</div>
+      <p class="text-slate-600 text-sm leading-relaxed">李中莹老师在华语 NLP 领域的长期积累，为产品带来较强的信任基础与体系化延展能力，这是较难复制的资源。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== S29 ENDING ================== -->
+<section class="section" id="s29" data-title="总结" style="background: linear-gradient(135deg, var(--navy-900), #1e3a8a); color: white;">
+  <div class="part-badge mb-6" style="background: var(--orange-500); color: white;">完 · 演示结束</div>
+  <h2 class="section-title" style="color: white;">三句话总结</h2>
+  <div class="max-w-4xl space-y-6 mt-10">
+    <div class="card" style="background: rgba(255,255,255,0.08); border-left: 4px solid var(--orange-400); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">1 / 框架</div>
+      <p class="text-xl leading-relaxed">基于李中莹 NLP 心理学的处事模式测评：<strong>36 题 → 6 维度 → 8 种类型 × 6 大生活领域 = 48 份深度报告。</strong></p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border-left: 4px solid var(--orange-400); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">2 / 成品</div>
+      <p class="text-xl leading-relaxed">用户花 12 分钟获得的，不只是一个类型标签，而是<strong>一份覆盖事业、亲密、亲子、情绪与成长议题的结构化理解路径</strong>。</p>
+    </div>
+    <div class="card" style="background: rgba(255,255,255,0.08); border-left: 4px solid var(--orange-400); color: white;">
+      <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">3 / 价值</div>
+      <p class="text-xl leading-relaxed">测评承担体验入口，报告承担价值建立，课程承担进阶承接。<strong>从“看清自己”到“持续成长”的产品路径相对完整。</strong></p>
+    </div>
+  </div>
+  <div class="mt-16 text-center text-slate-400 text-sm">
+    准备好讨论了。
+  </div>
+</section>
+
+<!-- ================== SCRIPTS ================== -->
+<script>
+// ============ Type data ============
+const TYPES = [
+  { code: '01', name: '开拓者', axes: '高·高·高', kw: '内核稳·从容', img: '01 开拓者.png', color: '#f97316' },
+  { code: '02', name: '追逐者', axes: '低·高·高', kw: '停不下来·身体易垮', img: '02 追逐者.png', color: '#ef4444' },
+  { code: '03', name: '实心人', axes: '高·低·高', kw: '真诚·好心办错事', img: '03 实心人.png', color: '#f59e0b' },
+  { code: '04', name: '隐士', axes: '高·低·低', kw: '想得开·行动受限', img: '04 隐士.png', color: '#8b5cf6' },
+  { code: '05', name: '逆行者', axes: '低·低·高', kw: '不肯认输·容易透支', img: '05 逆行者.png', color: '#ec4899' },
+  { code: '06', name: '局外人', axes: '高·高·低', kw: '看清·错失机会', img: '06 局外人.png', color: '#06b6d4' },
+  { code: '07', name: '守望者', axes: '低·高·低', kw: '稳当·与人生隔离', img: '07 守望者.png', color: '#10b981' },
+  { code: '08', name: '探索者', axes: '低·低·低', kw: '钝感·暂时搁浅', img: '08 探索者.png', color: '#64748b' }
+];
+
+// ============ Render type grid ============
+function renderTypeGrid() {
+  const grid = document.getElementById('typeGrid');
+  grid.innerHTML = TYPES.map(t => `
+    <div class="type-card">
+      <div class="thumb"><img src="${t.img}" alt="${t.name}" onerror="this.style.display='none'"></div>
+      <div class="meta">
+        <span class="axis-chip">信·能·动 ${t.axes}</span>
+        <div class="font-bold text-lg" style="color: ${t.color};">${t.code} · ${t.name}</div>
+        <div class="text-xs text-slate-500 mt-1">${t.kw}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ Side nav ============
+function buildSideNav() {
+  const sections = document.querySelectorAll('.section');
+  const nav = document.getElementById('sideNav');
+  nav.innerHTML = Array.from(sections).map(s => {
+    const label = s.dataset.title || s.id;
+    return `<div class="nav-dot" data-target="${s.id}" data-label="${label}" onclick="document.getElementById('${s.id}').scrollIntoView({behavior:'smooth'})"></div>`;
+  }).join('');
+  // active state via IntersectionObserver
+  const dots = nav.querySelectorAll('.nav-dot');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        dots.forEach(d => d.classList.toggle('active', d.dataset.target === e.target.id));
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => io.observe(s));
+}
+
+function syncIntroHeights() {
+  const scroll = document.getElementById('introScroll');
+  const notes = document.getElementById('introNotes');
+  if (!scroll || !notes) return;
+  if (window.innerWidth <= 1024) {
+    scroll.style.height = '720px';
+    scroll.style.maxHeight = '720px';
+    return;
+  }
+  const notesHeight = notes.offsetHeight;
+  if (notesHeight > 0) {
+    scroll.style.height = `${notesHeight}px`;
+    scroll.style.maxHeight = `${notesHeight}px`;
+  }
+}
+
+// ============ Layer toggle ============
+function toggleLayer(name) {
+  const el = document.getElementById('detail-' + name);
+  el.classList.toggle('open');
+}
+
+// ============ Tab switch ============
+function switchTab(name, btn) {
+  document.querySelectorAll('#tabBar .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ============ Likert demo ============
+function pickLikert(btn, val) {
+  btn.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+const SAMPLE_Q = [
+  "我心里有一套关于'事业应该怎么发展'的标准路径，偏离了就会让我感到不安。",
+  "面对一个我能力范围内的工作机会时，我相信'这个机会注定属于我'。",
+  "当一段关系出现问题时，我能从对方的角度想到几种不同的可能性。",
+  "我能让孩子自己承担 ta 选择的后果，哪怕我不认同 ta 的选择。",
+  "在亲密关系里，当我感到不舒服时，我说不清自己具体在不舒服什么。"
+];
+let qIdx = 0;
+function nextQ() {
+  qIdx = (qIdx + 1) % SAMPLE_Q.length;
+  document.getElementById('likertQ').textContent = SAMPLE_Q[qIdx];
+  document.getElementById('qNum').textContent = 8 + qIdx;
+  document.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+}
+function prevQ() {
+  qIdx = (qIdx - 1 + SAMPLE_Q.length) % SAMPLE_Q.length;
+  document.getElementById('likertQ').textContent = SAMPLE_Q[qIdx];
+  document.getElementById('qNum').textContent = 8 + qIdx;
+  document.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+}
+
+// ============ 3D cube ============
+function buildCube() {
+  const cube = document.getElementById('cube');
+  const stage = document.getElementById('cubeStage');
+  if (!cube || !stage) return;
+  const S = 320; // edge length in px
+  const half = S / 2;
+  // 8 vertices: signs of (信, 能, 动)
+  const verts = [
+    { x: -1, y: -1, z: -1, t: TYPES[7] }, // 低低低 探索者
+    { x:  1, y: -1, z: -1, t: TYPES[3] }, // 高低低 隐士
+    { x: -1, y:  1, z: -1, t: TYPES[6] }, // 低高低 守望者
+    { x:  1, y:  1, z: -1, t: TYPES[5] }, // 高高低 局外人
+    { x: -1, y: -1, z:  1, t: TYPES[4] }, // 低低高 逆行者
+    { x:  1, y: -1, z:  1, t: TYPES[2] }, // 高低高 实心人
+    { x: -1, y:  1, z:  1, t: TYPES[1] }, // 低高高 追逐者
+    { x:  1, y:  1, z:  1, t: TYPES[0] }  // 高高高 开拓者
+  ];
+  verts.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'cube-vertex';
+    div.style.transform = `translate3d(${v.x*half + half - 40}px, ${v.y*half + half - 40}px, ${v.z*half}px)`;
+    div.style.borderColor = v.t.color;
+    div.style.color = v.t.color;
+    div.innerHTML = `<div>${v.t.name}</div><div class="vlabel">${v.t.axes}</div>`;
+    cube.appendChild(div);
+  });
+  // axis labels
+  const axes = [
+    { pos: `translate3d(${S+10}px, ${half-10}px, 0px)`, label: '信→', color: '#3b82f6' },
+    { pos: `translate3d(${half-10}px, ${-30}px, 0px)`, label: '能↑', color: '#10b981' },
+    { pos: `translate3d(${half-10}px, ${half-10}px, ${S+10}px)`, label: '动⊙', color: '#f97316' }
+  ];
+  axes.forEach(a => {
+    const lab = document.createElement('div');
+    lab.style.position = 'absolute';
+    lab.style.transform = a.pos;
+    lab.style.color = a.color;
+    lab.style.fontWeight = '700';
+    lab.style.fontSize = '14px';
+    lab.textContent = a.label;
+    cube.appendChild(lab);
+  });
+  // drag rotation
+  let rx = -20, ry = -25, isDown = false, sx = 0, sy = 0;
+  stage.addEventListener('mousedown', e => { isDown = true; sx = e.clientX; sy = e.clientY; });
+  document.addEventListener('mouseup', () => isDown = false);
+  document.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    ry += (e.clientX - sx) * 0.6;
+    rx -= (e.clientY - sy) * 0.6;
+    sx = e.clientX; sy = e.clientY;
+    cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  });
+  // auto rotate slowly
+  let auto = true;
+  stage.addEventListener('mouseenter', () => auto = false);
+  stage.addEventListener('mouseleave', () => auto = true);
+  setInterval(() => {
+    if (!auto || isDown) return;
+    ry += 0.4;
+    cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  }, 30);
+}
+
+// ============ Radar charts ============
+function buildRadars() {
+  // S4: dimension radar (sample profile)
+  const ctx1 = document.getElementById('dimensionRadar');
+  if (ctx1) {
+    new Chart(ctx1, {
+      type: 'radar',
+      data: {
+        labels: ['信念弹性', '自我价值', '人际界限', '情绪解码', '行动变通', '系统归属'],
+        datasets: [{
+          label: '示例：追逐者',
+          data: [2.6, 2.8, 4.2, 4.1, 4.4, 4.0],
+          backgroundColor: 'rgba(249,115,22,0.2)',
+          borderColor: '#f97316',
+          borderWidth: 2,
+          pointBackgroundColor: '#f97316',
+          pointRadius: 5
+        }, {
+          label: '示例：探索者',
+          data: [2.1, 2.3, 2.5, 2.0, 2.4, 2.2],
+          backgroundColor: 'rgba(100,116,139,0.15)',
+          borderColor: '#64748b',
+          borderWidth: 2,
+          pointBackgroundColor: '#64748b',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            min: 0, max: 5,
+            ticks: { stepSize: 1, color: '#94a3b8' },
+            pointLabels: { font: { size: 13, weight: 600 }, color: '#1e293b' },
+            grid: { color: '#e2e8f0' },
+            angleLines: { color: '#e2e8f0' }
+          }
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 12 } } }
+        }
+      }
+    });
+  }
+  // S18: cross-domain radar
+  const ctx2 = document.getElementById('domainRadar');
+  if (ctx2) {
+    new Chart(ctx2, {
+      type: 'radar',
+      data: {
+        labels: ['事业财富', '伴侣婚姻', '亲子养育', '人际关系', '情绪健康', '个人发展'],
+        datasets: [{
+          label: '追逐者 · 6 领域得分',
+          data: [4.5, 4.3, 3.8, 4.2, 3.3, 3.9],
+          backgroundColor: 'rgba(249,115,22,0.25)',
+          borderColor: '#f97316',
+          borderWidth: 2,
+          pointBackgroundColor: '#f97316',
+          pointRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            min: 0, max: 5,
+            ticks: { stepSize: 1, color: '#94a3b8' },
+            pointLabels: { font: { size: 13, weight: 600 }, color: '#1e293b' },
+            grid: { color: '#e2e8f0' },
+            angleLines: { color: '#e2e8f0' }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+}
+
+// ============ Init ============
+document.addEventListener('DOMContentLoaded', () => {
+  renderTypeGrid();
+  buildSideNav();
+  syncIntroHeights();
+  buildCube();
+  buildRadars();
+});
+window.addEventListener('resize', syncIntroHeights);
+</script>
+
+</body>
+</html>
